@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado GH-900 — Módulo 2 · Unidades 1 e 2 · Rodada 2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #7c6aff;
+    --accent-glow: rgba(124,106,255,0.2);
+    --accent2: #ff6a9b;
+    --accent3: #6affd4;
+    --text: #e8e8f0;
+    --text-muted: #7070a0;
+    --correct-bg: #0d2a1e;
+    --correct-border: #2dff9a;
+    --wrong-bg: #2a0d0d;
+    --wrong-border: #ff4d6a;
+    --missed-border: #ffb347;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 48px 20px 100px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255,106,155,0.05) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 30% at 90% 80%, rgba(124,106,255,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(124,106,255,0.03) 39px, rgba(124,106,255,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(124,106,255,0.03) 39px, rgba(124,106,255,0.03) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+
+  .header { margin-bottom: 56px; animation: slideDown 0.7s cubic-bezier(.16,1,.3,1) both; }
+
+  .eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 3px;
+    border: 1px solid;
+  }
+
+  .tag-mod { color: var(--accent2); border-color: rgba(255,106,155,0.4); background: rgba(255,106,155,0.07); }
+  .tag-rnd { color: var(--accent3); border-color: rgba(106,255,212,0.4); background: rgba(106,255,212,0.06); }
+
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: blink 1.8s ease-in-out infinite; margin-left: auto; }
+
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 9vw, 88px); line-height: 0.9; letter-spacing: 0.02em; }
+  h1 em { font-style: normal; color: var(--accent2); text-shadow: 0 0 40px rgba(255,106,155,0.35); }
+
+  .subtitle { margin-top: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.04em; }
+
+  .progress-wrap { margin-top: 32px; display: flex; flex-direction: column; gap: 10px; }
+  .progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); width: 0%; transition: width 0.6s cubic-bezier(.16,1,.3,1); border-radius: 2px; box-shadow: 0 0 8px rgba(255,106,155,0.4); }
+  .progress-meta { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .score-live { color: var(--accent3); font-weight: 700; }
+
+  .qcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 28px;
+    opacity: 0;
+    transform: translateY(24px);
+    animation: riseUp 0.5s cubic-bezier(.16,1,.3,1) forwards;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .qcard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent2), transparent); opacity: 0; transition: opacity 0.3s; }
+  .qcard:hover::before { opacity: 1; }
+  .qcard:hover { border-color: rgba(255,106,155,0.2); }
+
+  .qcard:nth-child(1) { animation-delay: 0.05s; }
+  .qcard:nth-child(2) { animation-delay: 0.12s; }
+  .qcard:nth-child(3) { animation-delay: 0.19s; }
+  .qcard:nth-child(4) { animation-delay: 0.26s; }
+  .qcard:nth-child(5) { animation-delay: 0.33s; }
+
+  .qcard-header { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 28px; }
+
+  .qnum { flex-shrink: 0; font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; color: var(--border); letter-spacing: 0.02em; min-width: 52px; transition: color 0.3s; }
+  .qcard:hover .qnum { color: rgba(255,106,155,0.3); }
+
+  .qmeta { flex: 1; }
+
+  .qtype { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .qtype::before { content: ''; display: inline-block; width: 16px; height: 1px; background: var(--accent); }
+
+  .qtext { font-size: 16px; font-weight: 500; line-height: 1.6; color: var(--text); }
+
+  .multi-hint { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--missed-border); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .opt {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .opt:hover:not(.disabled) { border-color: var(--accent2); background: rgba(255,106,155,0.05); transform: translateX(4px); }
+  .opt.disabled { cursor: default; }
+  .opt.disabled:hover { transform: none; }
+  .opt.correct { background: var(--correct-bg); border-color: var(--correct-border); box-shadow: 0 0 16px rgba(45,255,154,0.07); }
+  .opt.wrong { background: var(--wrong-bg); border-color: var(--wrong-border); }
+  .opt.missed { background: rgba(255,179,71,0.06); border-color: var(--missed-border); }
+  .opt.sel-multi:not(.disabled) { border-color: var(--accent2); background: rgba(255,106,155,0.07); }
+
+  .opt-bubble { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); transition: all 0.2s; margin-top: 1px; }
+
+  .opt.correct .opt-bubble { background: var(--correct-border); border-color: var(--correct-border); color: #0a0a0f; }
+  .opt.wrong .opt-bubble { background: var(--wrong-border); border-color: var(--wrong-border); color: #fff; }
+  .opt.missed .opt-bubble { background: var(--missed-border); border-color: var(--missed-border); color: #0a0a0f; }
+  .opt.sel-multi:not(.disabled) .opt-bubble { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+  .opt-letter { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; margin-top: 3px; }
+  .opt-text { font-size: 14px; line-height: 1.55; color: var(--text); }
+
+  code { background: rgba(124,106,255,0.1); border: 1px solid rgba(124,106,255,0.2); border-radius: 4px; padding: 1px 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #b8aaff; }
+
+  .confirm-btn { margin-top: 18px; padding: 13px 28px; background: var(--accent2); color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em; }
+  .confirm-btn:hover:not(:disabled) { background: #ff8fb5; box-shadow: 0 4px 20px rgba(255,106,155,0.35); transform: translateY(-1px); }
+  .confirm-btn:disabled { opacity: 0.3; cursor: default; transform: none; box-shadow: none; }
+
+  .feedback { display: none; margin-top: 20px; padding: 20px; border-radius: 10px; font-size: 14px; line-height: 1.65; animation: riseUp 0.35s cubic-bezier(.16,1,.3,1) both; }
+  .feedback.fb-ok { display: block; background: var(--correct-bg); border: 1px solid rgba(45,255,154,0.25); }
+  .feedback.fb-err { display: block; background: var(--wrong-bg); border: 1px solid rgba(255,77,106,0.25); }
+
+  .fb-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .fb-ok .fb-label { color: var(--correct-border); }
+  .fb-err .fb-label { color: var(--wrong-border); }
+  .fb-body { color: var(--text); }
+
+  .result-panel { display: none; margin-top: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 56px 40px; text-align: center; animation: riseUp 0.7s cubic-bezier(.16,1,.3,1) both; position: relative; overflow: hidden; }
+  .result-panel::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,106,155,0.06), transparent); pointer-events: none; }
+  .result-panel.show { display: block; }
+
+  .result-ring { width: 130px; height: 130px; border-radius: 50%; margin: 0 auto 28px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 0.04em; position: relative; }
+  .result-ring::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid; }
+  .result-ring.pass { color: var(--correct-border); background: rgba(45,255,154,0.06); }
+  .result-ring.pass::after { border-color: var(--correct-border); box-shadow: 0 0 30px rgba(45,255,154,0.12); }
+  .result-ring.fail { color: var(--wrong-border); background: rgba(255,77,106,0.06); }
+  .result-ring.fail::after { border-color: var(--wrong-border); }
+
+  .result-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .result-sub { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 40px; letter-spacing: 0.04em; }
+
+  .result-stats { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; margin-bottom: 40px; }
+  .stat { text-align: center; }
+  .stat-n { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 0.04em; line-height: 1; }
+  .stat-l { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-top: 6px; }
+  .stat.ok .stat-n { color: var(--correct-border); }
+  .stat.err .stat-n { color: var(--wrong-border); }
+  .stat.pct .stat-n { color: var(--accent); }
+
+  .restart-btn { padding: 14px 36px; background: transparent; color: var(--accent2); border: 1px solid var(--accent2); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em; }
+  .restart-btn:hover { background: rgba(255,106,155,0.08); box-shadow: 0 0 20px rgba(255,106,155,0.15); }
+
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes riseUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+
+  @media (max-width: 600px) { .qcard { padding: 22px; } .qnum { font-size: 36px; min-width: 38px; } .result-stats { gap: 24px; } .result-panel { padding: 36px 20px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="eyebrow">
+      <span class="tag tag-mod">GH-900 · Módulo 2</span>
+      <span class="tag tag-rnd">Rodada 2</span>
+      <span class="live-dot"></span>
+    </div>
+    <h1>Unidades<br>1 e <em>2</em></h1>
+    <p class="subtitle">// 5 novas questões · baseado no Microsoft Learn · nível prova</p>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-meta">
+        <span id="progressLabel">0 de 5 respondidas</span>
+        <span>Acertos: <span class="score-live" id="scoreLive">0</span></span>
+      </div>
+    </div>
+  </header>
+
+  <div id="quiz"></div>
+  <div class="result-panel" id="result"></div>
+
+</div>
+<script>
+const questions = [
+  {
+    id: 1,
+    type: "Única escolha",
+    text: "O GitHub é descrito como uma plataforma baseada em nuvem que usa o Git como núcleo. Qual afirmação melhor descreve o que o GitHub adiciona ao Git puro?",
+    options: [
+      { l: "A", t: "O GitHub substitui o Git por um sistema de controle de versão próprio, mais moderno e voltado para equipes." },
+      { l: "B", t: "O GitHub adiciona uma camada de colaboração com ferramentas como pull requests, issues, automação e segurança integrada, mantendo o Git como base." },
+      { l: "C", t: "O GitHub transforma o Git em um sistema centralizado, eliminando a necessidade de repositórios locais." },
+      { l: "D", t: "O GitHub é apenas uma interface gráfica para executar comandos Git sem usar o terminal." }
+    ],
+    correct: ["B"],
+    explanation: "O Git é o motor de controle de versão, mas por si só não oferece colaboração em equipe. O <strong>GitHub adiciona</strong> sobre o Git uma plataforma completa: pull requests para revisão de código, issues para rastreamento de tarefas, GitHub Actions para automação, Copilot para IA, CodeQL para segurança e muito mais. O Git continua sendo a base — o GitHub amplifica suas capacidades para equipes."
+  },
+  {
+    id: 2,
+    type: "Única escolha",
+    text: "Uma startup com 8 desenvolvedores quer adotar o GitHub. Eles precisam de repositórios ilimitados, colaboração em equipe e acesso às funcionalidades básicas da plataforma com custo reduzido. Qual pilar da Plataforma GitHub Enterprise melhor representa o valor de hospedar mais de 420 milhões de repositórios e conectar mais de 100 milhões de desenvolvedores globalmente?",
+    options: [
+      { l: "A", t: "Produtividade — pois mais desenvolvedores significam mais tarefas automatizadas." },
+      { l: "B", t: "IA — pois a inteligência artificial é escalada proporcionalmente ao número de usuários." },
+      { l: "C", t: "Escala — pois representa a capacidade da plataforma de crescer e sustentar uma comunidade global massiva." },
+      { l: "D", t: "Colaboração — pois todos esses desenvolvedores trabalham juntos nos mesmos repositórios." }
+    ],
+    correct: ["C"],
+    explanation: "O pilar de <strong>Escala</strong> representa justamente a capacidade do GitHub de operar em dimensões globais: mais de <strong>100 milhões de desenvolvedores</strong> e mais de <strong>420 milhões de repositórios</strong>. Isso demonstra que a plataforma foi construída para crescer com qualquer organização — de uma startup de 8 pessoas até as maiores empresas do mundo."
+  },
+  {
+    id: 3,
+    type: "Múltipla escolha (escolha 2)",
+    text: "Um desenvolvedor quer criar um repositório no GitHub para um novo projeto. Quais duas afirmações descrevem corretamente as opções e etapas envolvidas na criação de um repositório? (Escolha 2)",
+    options: [
+      { l: "A", t: "Ao criar um repositório, é possível definir se ele será público (visível para todos) ou privado (acesso controlado)." },
+      { l: "B", t: "Todo repositório criado no GitHub deve obrigatoriamente ser inicializado com um arquivo README.md, caso contrário não pode ser criado." },
+      { l: "C", t: "O proprietário de um repositório pode ser o próprio usuário ou uma organização da qual ele faz parte." },
+      { l: "D", t: "Repositórios públicos no GitHub são automaticamente licenciados sob MIT, dispensando a necessidade de adicionar um arquivo de licença." }
+    ],
+    correct: ["A", "C"],
+    explanation: "(A) é correto: ao criar um repositório, você escolhe entre <strong>público</strong> (qualquer pessoa pode ver) ou <strong>privado</strong> (acesso controlado por você). (C) é correto: o proprietário pode ser o <strong>usuário individual</strong> ou uma <strong>organização</strong>. (B) é incorreta: o README é opcional na criação. (D) é incorreta: repositórios públicos <strong>não têm licença automática</strong> — sem um arquivo de licença explícito, todos os direitos são reservados ao autor por padrão."
+  },
+  {
+    id: 4,
+    type: "Única escolha",
+    text: "Um desenvolvedor criou um Gist com anotações de estudo e o deixou como 'secreto'. Dois dias depois, um colega sem conta no GitHub afirma que conseguiu acessar o conteúdo do Gist. Como isso é possível?",
+    options: [
+      { l: "A", t: "Não é possível. Gists secretos são totalmente privados e inacessíveis sem autenticação no GitHub." },
+      { l: "B", t: "É possível porque Gists secretos não aparecem em buscas, mas qualquer pessoa com a URL consegue acessá-los, mesmo sem conta no GitHub." },
+      { l: "C", t: "É possível apenas se o desenvolvedor tiver configurado o Gist como 'público' por engano." },
+      { l: "D", t: "É possível somente se o colega estiver na mesma rede que o desenvolvedor." }
+    ],
+    correct: ["B"],
+    explanation: "Este é um ponto crítico que a prova GH-900 costuma cobrar: Gists <strong>secretos não são privados</strong> — eles apenas não aparecem em resultados de busca pública. Qualquer pessoa que possua a URL consegue acessar o conteúdo, <strong>mesmo sem ter uma conta no GitHub</strong>. Por isso, o GitHub alerta explicitamente para nunca armazenar informações sensíveis (senhas, tokens, chaves) em Gists, mesmo secretos."
+  },
+  {
+    id: 5,
+    type: "Única escolha",
+    text: "Uma equipe de desenvolvimento quer criar documentação técnica longa para seu projeto — com guias de arquitetura, padrões de código e tutoriais de contribuição — diretamente vinculada ao repositório. O repositório é privado. Quem pode visualizar a Wiki desse repositório?",
+    options: [
+      { l: "A", text: undefined, t: "Qualquer pessoa na internet, pois Wikis são sempre públicas independentemente da visibilidade do repositório." },
+      { l: "B", t: "Apenas o proprietário do repositório, pois Wikis privadas são restritas ao criador." },
+      { l: "C", t: "Apenas pessoas com acesso de leitura ao repositório privado conseguem visualizar sua Wiki." },
+      { l: "D", t: "Apenas colaboradores com permissão de escrita, pois apenas eles podem editar e visualizar a Wiki." }
+    ],
+    correct: ["C"],
+    explanation: "A Wiki de um repositório <strong>privado</strong> segue a mesma regra de acesso do repositório: apenas pessoas com <strong>acesso de leitura</strong> (ou superior) ao repositório conseguem visualizá-la. Isso garante que a documentação interna fique protegida assim como o código. Já em repositórios públicos, a Wiki é acessível por qualquer pessoa."
+  }
+];
+
+let answered = 0, score = 0, multiSel = {};
+
+function buildUI() {
+  document.getElementById('quiz').innerHTML = questions.map(q => {
+    const isMulti = q.correct.length > 1;
+    let html = isMulti ? `<div class="multi-hint">⚠ Selecione ${q.correct.length} opções e confirme</div>` : '';
+    html += `<div class="options" id="opts${q.id}">`;
+    q.options.forEach(o => {
+      html += `<div class="opt" id="opt${q.id}${o.l}" onclick="pick(${q.id},'${o.l}',${isMulti})">
+        <div class="opt-bubble" id="bbl${q.id}${o.l}"></div>
+        <div class="opt-letter">${o.l}</div>
+        <div class="opt-text">${o.t}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    if (isMulti) html += `<button class="confirm-btn" id="cbtn${q.id}" onclick="submitMulti(${q.id})" disabled>Confirmar resposta</button>`;
+    html += `<div class="feedback" id="fb${q.id}"></div>`;
+
+    return `<div class="qcard" id="card${q.id}">
+      <div class="qcard-header">
+        <div class="qnum">0${q.id}</div>
+        <div class="qmeta">
+          <div class="qtype">${q.type}</div>
+          <div class="qtext">${q.text}</div>
+        </div>
+      </div>
+      ${html}
+    </div>`;
+  }).join('');
+}
+
+function pick(qid, label, isMulti) {
+  const allOpts = document.querySelectorAll(`[id^="opt${qid}"]`);
+  if ([...allOpts].some(o => o.classList.contains('disabled'))) return;
+  if (!isMulti) {
+    allOpts.forEach(o => o.classList.add('disabled'));
+    evalSingle(qid, label);
+  } else {
+    if (!multiSel[qid]) multiSel[qid] = new Set();
+    const sel = multiSel[qid];
+    const el = document.getElementById(`opt${qid}${label}`);
+    const bbl = document.getElementById(`bbl${qid}${label}`);
+    if (sel.has(label)) {
+      sel.delete(label); el.classList.remove('sel-multi'); bbl.textContent = '';
+    } else {
+      sel.add(label); el.classList.add('sel-multi'); bbl.textContent = '✓';
+    }
+    const q = questions.find(x => x.id === qid);
+    document.getElementById(`cbtn${qid}`).disabled = sel.size !== q.correct.length;
+  }
+}
+
+function submitMulti(qid) {
+  const q = questions.find(x => x.id === qid);
+  document.querySelectorAll(`[id^="opt${qid}"]`).forEach(o => o.classList.add('disabled'));
+  const btn = document.getElementById(`cbtn${qid}`);
+  btn.style.display = 'none';
+  const chosen = multiSel[qid] || new Set();
+  const isOk = q.correct.every(c => chosen.has(c)) && chosen.size === q.correct.length;
+  q.options.forEach(o => {
+    const el = document.getElementById(`opt${qid}${o.l}`);
+    const bbl = document.getElementById(`bbl${qid}${o.l}`);
+    el.classList.remove('sel-multi');
+    if (q.correct.includes(o.l) && chosen.has(o.l)) { el.classList.add('correct'); bbl.textContent = '✓'; }
+    else if (!q.correct.includes(o.l) && chosen.has(o.l)) { el.classList.add('wrong'); bbl.textContent = '✕'; }
+    else if (q.correct.includes(o.l) && !chosen.has(o.l)) { el.classList.add('missed'); bbl.textContent = '!'; }
+  });
+  showFb(qid, isOk, q.explanation);
+  tally(isOk);
+}
+
+function evalSingle(qid, chosen) {
+  const q = questions.find(x => x.id === qid);
+  const isOk = q.correct.includes(chosen);
+  q.options.forEach(o => {
+    const el = document.getElementById(`opt${qid}${o.l}`);
+    const bbl = document.getElementById(`bbl${qid}${o.l}`);
+    if (q.correct.includes(o.l)) { el.classList.add('correct'); bbl.textContent = '✓'; }
+    else if (o.l === chosen) { el.classList.add('wrong'); bbl.textContent = '✕'; }
+  });
+  showFb(qid, isOk, q.explanation);
+  tally(isOk);
+}
+
+function showFb(qid, isOk, explanation) {
+  const fb = document.getElementById(`fb${qid}`);
+  fb.className = `feedback ${isOk ? 'fb-ok' : 'fb-err'}`;
+  fb.innerHTML = `<div class="fb-label">${isOk ? '✓ &nbsp; Correto' : '✕ &nbsp; Incorreto'}</div><div class="fb-body">${explanation}</div>`;
+}
+
+function tally(isOk) {
+  answered++;
+  if (isOk) score++;
+  document.getElementById('progressFill').style.width = (answered / questions.length * 100) + '%';
+  document.getElementById('progressLabel').textContent = `${answered} de ${questions.length} respondidas`;
+  document.getElementById('scoreLive').textContent = score;
+  if (answered === questions.length) setTimeout(showResult, 900);
+}
+
+function showResult() {
+  const pct = Math.round(score / questions.length * 100);
+  const pass = pct >= 70;
+  const panel = document.getElementById('result');
+  panel.classList.add('show');
+  panel.innerHTML = `
+    <div class="result-ring ${pass ? 'pass' : 'fail'}">${pct}%</div>
+    <div class="result-title">${pass ? 'APROVADO' : 'CONTINUE ESTUDANDO'}</div>
+    <div class="result-sub">${pass ? 'Acima do mínimo exigido de 70% na GH-900' : 'Mínimo exigido na GH-900: 70%'}</div>
+    <div class="result-stats">
+      <div class="stat ok"><div class="stat-n">${score}</div><div class="stat-l">Corretas</div></div>
+      <div class="stat err"><div class="stat-n">${questions.length - score}</div><div class="stat-l">Incorretas</div></div>
+      <div class="stat pct"><div class="stat-n">${pct}%</div><div class="stat-l">Aproveitamento</div></div>
+    </div>
+    <button class="restart-btn" onclick="restart()">↺ &nbsp; Refazer simulado</button>
+  `;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function restart() {
+  answered = 0; score = 0; multiSel = {};
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressLabel').textContent = '0 de 5 respondidas';
+  document.getElementById('scoreLive').textContent = '0';
+  const panel = document.getElementById('result');
+  panel.classList.remove('show'); panel.innerHTML = '';
+  buildUI();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildUI();
+</script>
+</body>
+</html>
