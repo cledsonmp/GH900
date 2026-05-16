@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado GH-900 — Módulo 2 · Unidade 3 · GitHub Flow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0f0a;
+    --surface: #101810;
+    --surface2: #171f17;
+    --border: #243024;
+    --accent: #4dff91;
+    --accent-dim: rgba(77,255,145,0.15);
+    --accent2: #ff914d;
+    --accent3: #4db8ff;
+    --text: #e4f0e4;
+    --text-muted: #607060;
+    --correct-bg: #0a2a12;
+    --correct-border: #2dff7a;
+    --wrong-bg: #2a0a0a;
+    --wrong-border: #ff4d4d;
+    --missed-border: #ffd24d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 48px 20px 100px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 55% 35% at 90% 5%, rgba(77,255,145,0.05) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 30% at 5% 90%, rgba(77,184,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(77,255,145,0.025) 39px, rgba(77,255,145,0.025) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(77,255,145,0.025) 39px, rgba(77,255,145,0.025) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header { margin-bottom: 56px; animation: slideDown 0.7s cubic-bezier(.16,1,.3,1) both; }
+
+  .eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 3px; border: 1px solid;
+  }
+  .tag-mod { color: var(--accent); border-color: rgba(77,255,145,0.35); background: rgba(77,255,145,0.07); }
+  .tag-unit { color: var(--accent2); border-color: rgba(255,145,77,0.35); background: rgba(255,145,77,0.07); }
+
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent3); box-shadow: 0 0 8px var(--accent3); animation: blink 1.8s ease-in-out infinite; margin-left: auto; }
+
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 9vw, 88px); line-height: 0.9; letter-spacing: 0.02em; }
+  h1 em { font-style: normal; color: var(--accent); text-shadow: 0 0 40px rgba(77,255,145,0.3); }
+
+  .subtitle { margin-top: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.04em; }
+
+  .progress-wrap { margin-top: 32px; display: flex; flex-direction: column; gap: 10px; }
+  .progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent3)); width: 0%; transition: width 0.6s cubic-bezier(.16,1,.3,1); border-radius: 2px; box-shadow: 0 0 10px rgba(77,255,145,0.4); }
+  .progress-meta { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .score-live { color: var(--accent); font-weight: 700; }
+
+  /* CARD */
+  .qcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 36px;
+    margin-bottom: 28px;
+    opacity: 0; transform: translateY(24px);
+    animation: riseUp 0.5s cubic-bezier(.16,1,.3,1) forwards;
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .qcard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), transparent); opacity: 0; transition: opacity 0.3s; }
+  .qcard:hover::before { opacity: 1; }
+  .qcard:hover { border-color: rgba(77,255,145,0.2); }
+  .qcard:nth-child(1) { animation-delay: 0.05s; }
+  .qcard:nth-child(2) { animation-delay: 0.12s; }
+  .qcard:nth-child(3) { animation-delay: 0.19s; }
+  .qcard:nth-child(4) { animation-delay: 0.26s; }
+  .qcard:nth-child(5) { animation-delay: 0.33s; }
+
+  .qcard-header { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 28px; }
+  .qnum { flex-shrink: 0; font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; color: var(--border); letter-spacing: 0.02em; min-width: 52px; transition: color 0.3s; }
+  .qcard:hover .qnum { color: rgba(77,255,145,0.25); }
+  .qmeta { flex: 1; }
+  .qtype { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .qtype::before { content: ''; display: inline-block; width: 16px; height: 1px; background: var(--accent2); }
+  .qtext { font-size: 16px; font-weight: 500; line-height: 1.6; color: var(--text); }
+
+  /* OPTIONS */
+  .multi-hint { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--missed-border); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .opt {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 20px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 10px;
+    cursor: pointer; transition: all 0.2s ease; user-select: none;
+  }
+  .opt:hover:not(.disabled) { border-color: var(--accent); background: rgba(77,255,145,0.05); transform: translateX(4px); }
+  .opt.disabled { cursor: default; }
+  .opt.disabled:hover { transform: none; }
+  .opt.correct { background: var(--correct-bg); border-color: var(--correct-border); box-shadow: 0 0 16px rgba(45,255,122,0.07); }
+  .opt.wrong { background: var(--wrong-bg); border-color: var(--wrong-border); }
+  .opt.missed { background: rgba(255,210,77,0.05); border-color: var(--missed-border); }
+  .opt.sel-multi:not(.disabled) { border-color: var(--accent); background: rgba(77,255,145,0.07); }
+
+  .opt-bubble { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); transition: all 0.2s; margin-top: 1px; }
+  .opt.correct .opt-bubble { background: var(--correct-border); border-color: var(--correct-border); color: #0a0f0a; }
+  .opt.wrong .opt-bubble { background: var(--wrong-border); border-color: var(--wrong-border); color: #fff; }
+  .opt.missed .opt-bubble { background: var(--missed-border); border-color: var(--missed-border); color: #0a0f0a; }
+  .opt.sel-multi:not(.disabled) .opt-bubble { background: var(--accent); border-color: var(--accent); color: #0a0f0a; }
+
+  .opt-letter { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; margin-top: 3px; }
+  .opt-text { font-size: 14px; line-height: 1.55; color: var(--text); }
+
+  code { background: rgba(77,255,145,0.08); border: 1px solid rgba(77,255,145,0.2); border-radius: 4px; padding: 1px 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #7dffb3; }
+
+  .confirm-btn { margin-top: 18px; padding: 13px 28px; background: var(--accent); color: #0a0f0a; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em; }
+  .confirm-btn:hover:not(:disabled) { background: #7dffb3; box-shadow: 0 4px 20px rgba(77,255,145,0.3); transform: translateY(-1px); }
+  .confirm-btn:disabled { opacity: 0.25; cursor: default; transform: none; box-shadow: none; }
+
+  /* FEEDBACK */
+  .feedback { display: none; margin-top: 20px; padding: 20px; border-radius: 10px; font-size: 14px; line-height: 1.65; animation: riseUp 0.35s cubic-bezier(.16,1,.3,1) both; }
+  .feedback.fb-ok { display: block; background: var(--correct-bg); border: 1px solid rgba(45,255,122,0.25); }
+  .feedback.fb-err { display: block; background: var(--wrong-bg); border: 1px solid rgba(255,77,77,0.25); }
+  .fb-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .fb-ok .fb-label { color: var(--correct-border); }
+  .fb-err .fb-label { color: var(--wrong-border); }
+  .fb-body { color: var(--text); }
+
+  /* RESULT */
+  .result-panel { display: none; margin-top: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 56px 40px; text-align: center; animation: riseUp 0.7s cubic-bezier(.16,1,.3,1) both; position: relative; overflow: hidden; }
+  .result-panel::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(77,255,145,0.06), transparent); pointer-events: none; }
+  .result-panel.show { display: block; }
+
+  .result-ring { width: 130px; height: 130px; border-radius: 50%; margin: 0 auto 28px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 0.04em; position: relative; }
+  .result-ring::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid; }
+  .result-ring.pass { color: var(--correct-border); background: rgba(45,255,122,0.06); }
+  .result-ring.pass::after { border-color: var(--correct-border); box-shadow: 0 0 30px rgba(45,255,122,0.12); }
+  .result-ring.fail { color: var(--wrong-border); background: rgba(255,77,77,0.06); }
+  .result-ring.fail::after { border-color: var(--wrong-border); }
+
+  .result-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .result-sub { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 40px; letter-spacing: 0.04em; }
+  .result-stats { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; margin-bottom: 40px; }
+  .stat { text-align: center; }
+  .stat-n { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 0.04em; line-height: 1; }
+  .stat-l { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-top: 6px; }
+  .stat.ok .stat-n { color: var(--correct-border); }
+  .stat.err .stat-n { color: var(--wrong-border); }
+  .stat.pct .stat-n { color: var(--accent3); }
+
+  .restart-btn { padding: 14px 36px; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .restart-btn:hover { background: var(--accent-dim); box-shadow: 0 0 20px rgba(77,255,145,0.15); }
+
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes riseUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+
+  @media (max-width: 600px) { .qcard { padding: 22px; } .qnum { font-size: 36px; min-width: 38px; } .result-stats { gap: 24px; } .result-panel { padding: 36px 20px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="eyebrow">
+      <span class="tag tag-mod">GH-900 · Módulo 2</span>
+      <span class="tag tag-unit">Unidade 3 · GitHub Flow</span>
+      <span class="live-dot"></span>
+    </div>
+    <h1>GitHub<br><em>Flow</em></h1>
+    <p class="subtitle">// 5 questões · branches · commits · pull requests · nível prova</p>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-meta">
+        <span id="progressLabel">0 de 5 respondidas</span>
+        <span>Acertos: <span class="score-live" id="scoreLive">0</span></span>
+      </div>
+    </div>
+  </header>
+
+  <div id="quiz"></div>
+  <div class="result-panel" id="result"></div>
+
+</div>
+<script>
+const questions = [
+  {
+    id: 1,
+    type: "Única escolha",
+    text: "Uma desenvolvedora está prestes a implementar uma nova funcionalidade em um repositório compartilhado com outras 5 pessoas. Seguindo o GitHub Flow, qual deve ser o primeiro passo antes de iniciar qualquer alteração no código?",
+    options: [
+      { l: "A", t: "Fazer um commit diretamente no branch <code>main</code> para garantir que todos vejam as alterações imediatamente." },
+      { l: "B", t: "Criar um novo branch a partir do <code>main</code> para isolar as alterações sem afetar o código em produção." },
+      { l: "C", t: "Abrir um pull request vazio para notificar a equipe que iniciará o desenvolvimento." },
+      { l: "D", t: "Fazer um fork do repositório para ter uma cópia independente antes de começar." }
+    ],
+    correct: ["B"],
+    explanation: "O primeiro passo do GitHub Flow é sempre <strong>criar um branch</strong>. Isso garante que as alterações fiquem isoladas do branch <code>main</code> (que representa o código estável/produção). Commitar diretamente no <code>main</code> é uma má prática — qualquer erro afetaria imediatamente toda a equipe. O fork é usado para contribuições em repositórios externos, não no fluxo interno de uma equipe."
+  },
+  {
+    id: 2,
+    type: "Única escolha",
+    text: "Durante o desenvolvimento, um desenvolvedor fez alterações em três arquivos do projeto. Após executar <code>git add .</code>, qual é o estado atual desses arquivos no Git?",
+    options: [
+      { l: "A", t: "Commitados — as alterações foram salvas permanentemente no histórico do repositório." },
+      { l: "B", t: "Não rastreados — o Git ainda não reconhece esses arquivos como parte do repositório." },
+      { l: "C", t: "Preparados (Staged) — os arquivos estão na área de staging, prontos para serem incluídos no próximo commit." },
+      { l: "D", t: "Modificados — os arquivos foram alterados mas ainda não foram preparados para commit." }
+    ],
+    correct: ["C"],
+    explanation: "Após executar <code>git add</code>, os arquivos passam para o estado <strong>Staged (Preparado)</strong> — eles estão na área de staging aguardando o próximo <code>git commit</code>. O estado <strong>Modificado</strong> é antes do <code>git add</code>. <strong>Commitado</strong> é após o <code>git commit</code>. <strong>Não rastreado</strong> é quando o Git ainda nunca viu o arquivo."
+  },
+  {
+    id: 3,
+    type: "Múltipla escolha (escolha 2)",
+    text: "Um desenvolvedor abriu um Pull Request no GitHub com as alterações de seu branch. Quais duas afirmações descrevem corretamente o que pode acontecer durante o processo de revisão de um Pull Request? (Escolha 2)",
+    options: [
+      { l: "A", t: "Os revisores podem comentar no pull request inteiro ou em linhas e arquivos específicos do código." },
+      { l: "B", t: "Após abrir um pull request, não é mais possível fazer novos commits no branch — o código fica bloqueado para edição." },
+      { l: "C", t: "O desenvolvedor pode continuar fazendo commits e pushes no branch após abrir o PR, e o pull request será atualizado automaticamente." },
+      { l: "D", t: "Pull requests só podem ser abertos após todo o desenvolvimento estar concluído — não é possível abrir um PR com trabalho em andamento." }
+    ],
+    correct: ["A", "C"],
+    explanation: "(A) é correto: revisores podem comentar no pull request como um todo ou em <strong>linhas e arquivos específicos</strong>, tornando o feedback preciso e contextualizado. (C) é correto: você pode continuar fazendo commits após abrir o PR — o pull request <strong>se atualiza automaticamente</strong> com os novos commits. (B) é incorreta: o branch não fica bloqueado. (D) é incorreta: é possível (e recomendado) abrir <strong>Draft Pull Requests</strong> para trabalhos em andamento que precisam de feedback antecipado."
+  },
+  {
+    id: 4,
+    type: "Única escolha",
+    text: "Uma equipe discute qual modelo de fluxo de trabalho adotar. O time faz deploy contínuo várias vezes ao dia e preza por agilidade. Qual modelo é mais indicado e por quê?",
+    options: [
+      { l: "A", t: "Git Flow — pois seus branches de <code>release</code> e <code>hotfix</code> garantem mais controle sobre as entregas frequentes." },
+      { l: "B", t: "GitHub Flow — por ser um fluxo leve e simples, ideal para times que fazem entregas contínuas diretamente no branch principal." },
+      { l: "C", t: "Git Flow — pois o branch <code>develop</code> permite acumular funcionalidades antes de cada deploy, otimizando as entregas contínuas." },
+      { l: "D", t: "GitHub Flow — pois exige obrigatoriamente a criação de branches <code>release</code> e <code>hotfix</code> para cada entrega." }
+    ],
+    correct: ["B"],
+    explanation: "O <strong>GitHub Flow</strong> é o mais indicado para times com entregas contínuas. É um fluxo <strong>leve e simples</strong>: cria-se um branch, faz commits, abre PR, revisa, faz merge no <code>main</code> e deleta o branch. O <strong>Git Flow</strong> é mais estruturado e 'pesado', com múltiplos branches de longa duração (<code>develop</code>, <code>release</code>, <code>hotfix</code>), sendo mais adequado para times com ciclos de lançamento versionados e planejados."
+  },
+  {
+    id: 5,
+    type: "Única escolha",
+    text: "Após o merge bem-sucedido de um Pull Request no branch <code>main</code>, qual é o passo final recomendado pelo GitHub Flow e qual é o motivo principal para realizá-lo?",
+    options: [
+      { l: "A", t: "Fazer um novo commit no <code>main</code> documentando o merge, para manter o histórico organizado." },
+      { l: "B", t: "Criar imediatamente um novo branch a partir do <code>main</code> para a próxima funcionalidade." },
+      { l: "C", t: "Deletar o branch utilizado — para indicar que o trabalho está concluído e evitar o uso acidental de branches desatualizados." },
+      { l: "D", t: "Reverter o branch para o estado anterior ao desenvolvimento, mantendo-o disponível para futuras referências." }
+    ],
+    correct: ["C"],
+    explanation: "O passo final do GitHub Flow é <strong>deletar o branch</strong> após o merge. Isso serve para: (1) indicar que o trabalho naquele branch está <strong>concluído</strong>; (2) evitar que alguém use acidentalmente um branch desatualizado. <strong>Importante:</strong> deletar o branch não apaga o histórico — o pull request e todos os commits continuam registrados no GitHub para referência futura."
+  }
+];
+
+let answered = 0, score = 0, multiSel = {};
+
+function buildUI() {
+  document.getElementById('quiz').innerHTML = questions.map(q => {
+    const isMulti = q.correct.length > 1;
+    let html = isMulti ? `<div class="multi-hint">⚠ Selecione ${q.correct.length} opções e confirme</div>` : '';
+    html += `<div class="options" id="opts${q.id}">`;
+    q.options.forEach(o => {
+      html += `<div class="opt" id="opt${q.id}${o.l}" onclick="pick(${q.id},'${o.l}',${isMulti})">
+        <div class="opt-bubble" id="bbl${q.id}${o.l}"></div>
+        <div class="opt-letter">${o.l}</div>
+        <div class="opt-text">${o.t}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    if (isMulti) html += `<button class="confirm-btn" id="cbtn${q.id}" onclick="submitMulti(${q.id})" disabled>Confirmar resposta</button>`;
+    html += `<div class="feedback" id="fb${q.id}"></div>`;
+
+    return `<div class="qcard" id="card${q.id}">
+      <div class="qcard-header">
+        <div class="qnum">0${q.id}</div>
+        <div class="qmeta">
+          <div class="qtype">${q.type}</div>
+          <div class="qtext">${q.text}</div>
+        </div>
+      </div>
+      ${html}
+    </div>`;
+  }).join('');
+}
+
+function pick(qid, label, isMulti) {
+  const allOpts = document.querySelectorAll(`[id^="opt${qid}"]`);
+  if ([...allOpts].some(o => o.classList.contains('disabled'))) return;
+  if (!isMulti) {
+    allOpts.forEach(o => o.classList.add('disabled'));
+    evalSingle(qid, label);
+  } else {
+    if (!multiSel[qid]) multiSel[qid] = new Set();
+    const sel = multiSel[qid];
+    const el = document.getElementById(`opt${qid}${label}`);
+    const bbl = document.getElementById(`bbl${qid}${label}`);
+    if (sel.has(label)) { sel.delete(label); el.classList.remove('sel-multi'); bbl.textContent = ''; }
+    else { sel.add(label); el.classList.add('sel-multi'); bbl.textContent = '✓'; }
+    const q = questions.find(x => x.id === qid);
+    document.getElementById(`cbtn${qid}`).disabled = sel.size !== q.correct.length;
+  }
+}
+
+function submitMulti(qid) {
+  const q = questions.find(x => x.id === qid);
+  document.querySelectorAll(`[id^="opt${qid}"]`).forEach(o => o.classList.add('disabled'));
+  document.getElementById(`cbtn${qid}`).style.display = 'none';
+  const chosen = multiSel[qid] || new Set();
+  const isOk = q.correct.every(c => chosen.has(c)) && chosen.size === q.correct.length;
+  q.options.forEach(o => {
+    const el = document.getElementById(`opt${qid}${o.l}`);
+    const bbl = document.getElementById(`bbl${qid}${o.l}`);
+    el.classList.remove('sel-multi');
+    if (q.correct.includes(o.l) && chosen.has(o.l)) { el.classList.add('correct'); bbl.textContent = '✓'; }
+    else if (!q.correct.includes(o.l) && chosen.has(o.l)) { el.classList.add('wrong'); bbl.textContent = '✕'; }
+    else if (q.correct.includes(o.l) && !chosen.has(o.l)) { el.classList.add('missed'); bbl.textContent = '!'; }
+  });
+  showFb(qid, isOk, q.explanation);
+  tally(isOk);
+}
+
+function evalSingle(qid, chosen) {
+  const q = questions.find(x => x.id === qid);
+  const isOk = q.correct.includes(chosen);
+  q.options.forEach(o => {
+    const el = document.getElementById(`opt${qid}${o.l}`);
+    const bbl = document.getElementById(`bbl${qid}${o.l}`);
+    if (q.correct.includes(o.l)) { el.classList.add('correct'); bbl.textContent = '✓'; }
+    else if (o.l === chosen) { el.classList.add('wrong'); bbl.textContent = '✕'; }
+  });
+  showFb(qid, isOk, q.explanation);
+  tally(isOk);
+}
+
+function showFb(qid, isOk, explanation) {
+  const fb = document.getElementById(`fb${qid}`);
+  fb.className = `feedback ${isOk ? 'fb-ok' : 'fb-err'}`;
+  fb.innerHTML = `<div class="fb-label">${isOk ? '✓ &nbsp; Correto' : '✕ &nbsp; Incorreto'}</div><div class="fb-body">${explanation}</div>`;
+}
+
+function tally(isOk) {
+  answered++;
+  if (isOk) score++;
+  document.getElementById('progressFill').style.width = (answered / questions.length * 100) + '%';
+  document.getElementById('progressLabel').textContent = `${answered} de ${questions.length} respondidas`;
+  document.getElementById('scoreLive').textContent = score;
+  if (answered === questions.length) setTimeout(showResult, 900);
+}
+
+function showResult() {
+  const pct = Math.round(score / questions.length * 100);
+  const pass = pct >= 70;
+  const panel = document.getElementById('result');
+  panel.classList.add('show');
+  panel.innerHTML = `
+    <div class="result-ring ${pass ? 'pass' : 'fail'}">${pct}%</div>
+    <div class="result-title">${pass ? 'APROVADO' : 'CONTINUE ESTUDANDO'}</div>
+    <div class="result-sub">${pass ? 'Acima do mínimo exigido de 70% na GH-900' : 'Mínimo exigido na GH-900: 70%'}</div>
+    <div class="result-stats">
+      <div class="stat ok"><div class="stat-n">${score}</div><div class="stat-l">Corretas</div></div>
+      <div class="stat err"><div class="stat-n">${questions.length - score}</div><div class="stat-l">Incorretas</div></div>
+      <div class="stat pct"><div class="stat-n">${pct}%</div><div class="stat-l">Aproveitamento</div></div>
+    </div>
+    <button class="restart-btn" onclick="restart()">↺ &nbsp; Refazer simulado</button>
+  `;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function restart() {
+  answered = 0; score = 0; multiSel = {};
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressLabel').textContent = '0 de 5 respondidas';
+  document.getElementById('scoreLive').textContent = '0';
+  const panel = document.getElementById('result');
+  panel.classList.remove('show'); panel.innerHTML = '';
+  buildUI();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildUI();
+</script>
+</body>
+</html>
